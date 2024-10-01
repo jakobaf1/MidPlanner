@@ -1,0 +1,7 @@
+# Add a shift by going to a new line and typing start_time-end_time
+# Example: a shift with start_time 7 and end_time 15 is written as 7-15
+7-15
+7-19
+15-23
+19-7
+23-7

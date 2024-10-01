@@ -1,0 +1,149 @@
+from Edge import Edge
+from Employee import Employee
+from Shift import Shift
+from Vertex import Vertex
+from Preference import Preference
+
+
+class FlowGraph:
+
+    employee_nodes = []
+    source = Vertex(purpose = "source")
+    sink = Vertex(purpose = "sink")
+
+    # could add a start_date variable, so one can make the schedule from a day in the future
+    def __init__(self, shifts: list[Shift], employees: list[Employee]):
+        self.shifts = shifts
+        self.employees = employees
+
+    def generate_graph(self):
+
+        # make employee nodes + edges
+        for e in self.employees:
+            emp_node = Vertex(purpose = "employee", employee = e)
+            new_edge = Edge(self.source, emp_node, 8*e.weekly_hrs, 0, 0)
+            self.source.add_out_going(new_edge)
+            emp_node.add_in_going(new_edge)
+
+            # adds the node to the list of employee nodes, so it can connect to the rest of the graph later
+            self.employee_nodes.append(emp_node)
+
+
+        
+        for i in range(56):
+            # nodes for each department/level
+            labor_lvl1 = Vertex(day = i, department = "labor") # will probably replace day with another system of recognizing the days
+            labor_lvl2 = Vertex(day = i, department = "labor")
+            mat_lvl1 = Vertex(day = i, department = "maternity")
+            mat_lvl2 = Vertex(day = i, department = "maternity")
+
+            # make node for time of day
+            day_node = Vertex(day = i, time_of_day= "day")
+            eve_node = Vertex(day = i, time_of_day= "evening")
+            night_node = Vertex(day = i, time_of_day= "night")
+
+            for s in self.shifts:
+                # create shift node and edges to the shift node from each level/department node
+                shift_node = Vertex(day = i, shift = s)
+                edge1 = Edge(labor_lvl1, shift_node, s.calc_hours(), 0, 0) # capacity might be changed from hours or a factor of hours. Still have to figure that part out
+                edge2 = Edge(labor_lvl2, shift_node, s.calc_hours()*3, 0, 0) # capacity might be changed from hours or a factor of hours. Still have to figure that part out
+                edge3 = Edge(mat_lvl1, shift_node, s.calc_hours(), 0, 0) # capacity might be changed from hours or a factor of hours. Still have to figure that part out
+                edge4 = Edge(mat_lvl2, shift_node, s.calc_hours()*3, 0, 0) # capacity might be changed from hours or a factor of hours. Still have to figure that part out
+
+                # add the edges as in_going nodes to the shift
+                shift_node.add_in_going(edge1)
+                shift_node.add_in_going(edge2)
+                shift_node.add_in_going(edge3)
+                shift_node.add_in_going(edge4)
+
+                # add the edges as out_going from the department/level nodes
+                labor_lvl1.add_out_going(edge1) # could add these in the constructor for the "Edge" class?
+                labor_lvl2.add_out_going(edge2)
+                mat_lvl1.add_out_going(edge3)
+                mat_lvl2.add_out_going(edge4)
+
+                # link to the correct node(s)
+                match s.start_time:
+                    case 7:
+                        # maybe control amount of hours by minimum and maximum at 8?
+                        new_edge = Edge(shift_node, day_node, 48, 0, 0) # might want to find a new system for the "48" hrs (6 employees within the 8 hours)
+                        shift_node.add_out_going(new_edge)
+                        day_node.add_in_going(new_edge)
+                        
+                        # adds the 4 hours extra from a 12 hour shift to the evening
+                        if s.calc_hours == 12:
+                            # have to figure out how I will handle the splits from 12 hours. maybe add a minimum and maximum amount one can send through
+                            # if I add a min and max of 4 hours, then there can only be sent 4 hours through here (which is what's supposed to happen)
+                            temp_edge = Edge(shift_node, eve_node, 32/2, 0, 0)
+                            eve_node.add_in_going(temp_edge)
+                            shift_node.add_out_going(temp_edge)
+
+                    case 15:
+                        new_edge = Edge(shift_node, eve_node, 32, 0, 0) # might want to find a new system for the "48" hrs (6 employees within the 8 hours)
+                        shift_node.add_out_going(new_edge)
+                        eve_node.add_in_going(new_edge)
+
+                    case 19:
+                        # have to figure out how I will handle the splits from 12 hours. maybe add a minimum and maximum amount one can send through
+                        # if I add a min and max of 4 hours, then there can only be sent 4 hours through here (which is what's supposed to happen)
+                        new_edge = Edge(shift_node, eve_node, 32/2, 0, 0) # might want to find a new system for the "48" hrs (6 employees within the 8 hours)
+                        shift_node.add_out_going(new_edge)
+                        eve_node.add_in_going(new_edge)
+
+                        temp_edge = Edge(shift_node, night_node, 32, 0, 0)
+                        night_node.add_in_going(temp_edge)
+                        shift_node.add_out_going(temp_edge)
+
+                    case 23:
+                        new_edge = Edge(shift_node, night_node, 32, 0, 0) # might want to find a new system for the "48" hrs (6 employees within the 8 hours)
+                        shift_node.add_out_going(new_edge)
+                        night_node.add_in_going(new_edge)
+
+                day_edge = Edge(day_node, self.sink, 48, 0, 0)
+                self.sink.add_in_going(day_edge)
+                day_node.add_out_going(day_edge)
+
+                eve_edge = Edge(eve_node, self.sink, 32, 0, 0)
+                self.sink.add_in_going(eve_edge)
+                eve_node.add_out_going(eve_edge)
+
+                night_edge = Edge(night_node, self.sink, 32, 0, 0)
+                self.sink.add_in_going(night_edge)
+                night_node.add_out_going(night_edge)
+
+                
+            for e in self.employee_nodes:
+                emp = e.employee
+                # find out what preferences the employee has regarding this specific day
+                # emp.check_pref(day = i) some kind of function for figuring out how to deal with the specific day
+                if emp.exp_lvl == 1:
+                    if emp.departments.contains("labor"):
+                        new_edge = Edge(e, labor_lvl1, 12, 0, 0) # again weight must be set based on preferences later
+                    if emp.departments.contains("maternity"):
+                        new_edge = Edge(e, mat_lvl1, 12, 0, 0)
+                elif emp.exp_lvl == 2:
+                    if emp.departments.contains("labor"):
+                        new_edge = Edge(e, labor_lvl2, 12, 0, 0) # again weight must be set based on preferences later
+                    if emp.departments.contains("maternity"):
+                        new_edge = Edge(e, mat_lvl2, 12, 0, 0)
+
+
+
+                
+
+
+            
+                        
+
+
+
+
+        
+
+
+    def what_day_is_it(day: int):
+        # used to find out what day it is. 
+        # first what date, and then if that date is weekend or holiday etc.
+        return
+
+
