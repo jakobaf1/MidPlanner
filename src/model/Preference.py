@@ -1,4 +1,3 @@
-from Shift import Shift
 
 class Preference:
     

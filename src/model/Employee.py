@@ -1,10 +1,9 @@
-from Preference import Preference
 
 class Employee:
 
     shifts = None
 
-    def __init__(self, name: str, id: str, departments: list[str], weekly_hrs: int, exp_lvl: int, pref: list[Preference]):
+    def __init__(self, name: str, id: str, departments: list[str], weekly_hrs: int, exp_lvl: int, pref):
         self.name = name # name of employee
         self.id = id # id/tag to reference them by
         self.departments = departments # list of departments the employee works in
