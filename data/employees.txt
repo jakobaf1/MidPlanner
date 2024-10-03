@@ -32,3 +32,286 @@
 # This means that the employee John Doe wants to work thursday nights
 # and wants the 12th of June off
 
+Employee: EmployeeL 01
+ID: LAB01
+Departments: labor
+Hours: 31
+Experience: 2
+
+Employee: EmployeeL 02
+ID: LAB02
+Departments: labor
+Hours: 9
+Experience: 1
+
+Employee: EmployeeL 03
+ID: LAB03
+Departments: labor
+Hours: 33
+Experience: 2
+
+Employee: EmployeeL 04
+ID: LAB04
+Departments: labor
+Hours: 9
+Experience: 2
+
+Employee: EmployeeL 05
+ID: LAB05
+Departments: labor
+Hours: 13
+Experience: 1
+
+Employee: EmployeeL 06
+ID: LAB06
+Departments: labor
+Hours: 11
+Experience: 2
+
+Employee: EmployeeL 07
+ID: LAB07
+Departments: labor
+Hours: 33
+Experience: 2
+
+Employee: EmployeeL 08
+ID: LAB08
+Departments: labor
+Hours: 35
+Experience: 1
+
+Employee: EmployeeL 09
+ID: LAB09
+Departments: labor
+Hours: 35
+Experience: 1
+
+Employee: EmployeeL 10
+ID: LAB10
+Departments: labor
+Hours: 37
+Experience: 2
+
+Employee: EmployeeL 11
+ID: LAB11
+Departments: labor
+Hours: 37
+Experience: 1
+
+Employee: EmployeeL 12
+ID: LAB12
+Departments: labor
+Hours: 37
+Experience: 1
+
+Employee: EmployeeM 01
+ID: MAT01
+Departments: maternity
+Hours: 11
+Experience: 2
+
+Employee: EmployeeM 02
+ID: MAT02
+Departments: maternity
+Hours: 16
+Experience: 2
+
+Employee: EmployeeM 03
+ID: MAT03
+Departments: maternity
+Hours: 12
+Experience: 1
+
+Employee: EmployeeM 04
+ID: MAT04
+Departments: maternity
+Hours: 14
+Experience: 1
+
+Employee: EmployeeM 05
+ID: MAT05
+Departments: maternity
+Hours: 20
+Experience: 1
+
+Employee: EmployeeM 06
+ID: MAT06
+Departments: maternity
+Hours: 24
+Experience: 2
+
+Employee: EmployeeM 07
+ID: MAT07
+Departments: maternity
+Hours: 16
+Experience: 1
+
+Employee: EmployeeM 08
+ID: MAT08
+Departments: maternity
+Hours: 16
+Experience: 2
+
+Employee: Employee 01
+ID: BOTH01
+Departments: labor, maternity
+Hours: 8
+Experience: 2
+
+Employee: Employee 02
+ID: BOTH02
+Departments: labor, maternity
+Hours: 28
+Experience: 1
+
+Employee: Employee 03
+ID: BOTH03
+Departments: labor, maternity
+Hours: 18
+Experience: 2
+
+Employee: Employee 04
+ID: BOTH04
+Departments: labor, maternity
+Hours: 19
+Experience: 2
+
+Employee: Employee 05
+ID: BOTH05
+Departments: labor, maternity
+Hours: 9
+Experience: 1
+
+Employee: Employee 06
+ID: BOTH06
+Departments: labor, maternity
+Hours: 14
+Experience: 1
+
+Employee: Employee 07
+ID: BOTH07
+Departments: labor, maternity
+Hours: 7
+Experience: 1
+
+Employee: Employee 08
+ID: BOTH08
+Departments: labor, maternity
+Hours: 25
+Experience: 2
+
+Employee: Employee 09
+ID: BOTH09
+Departments: labor, maternity
+Hours: 32
+Experience: 1
+
+Employee: Employee 10
+ID: BOTH10
+Departments: labor, maternity
+Hours: 12
+Experience: 1
+
+Employee: Employee 11
+ID: BOTH11
+Departments: labor, maternity
+Hours: 12
+Experience: 1
+
+Employee: Employee 12
+ID: BOTH12
+Departments: labor, maternity
+Hours: 28
+Experience: 1
+
+Employee: Employee 13
+ID: BOTH13
+Departments: labor, maternity
+Hours: 9
+Experience: 1
+
+Employee: Employee 14
+ID: BOTH14
+Departments: labor, maternity
+Hours: 13
+Experience: 1
+
+Employee: Employee 15
+ID: BOTH15
+Departments: labor, maternity
+Hours: 32
+Experience: 1
+
+Employee: Employee 16
+ID: BOTH16
+Departments: labor, maternity
+Hours: 34
+Experience: 1
+
+Employee: Employee 17
+ID: BOTH17
+Departments: labor, maternity
+Hours: 36
+Experience: 2
+
+Employee: Employee 18
+ID: BOTH18
+Departments: labor, maternity
+Hours: 35
+Experience: 1
+
+Employee: Employee 19
+ID: BOTH19
+Departments: labor, maternity
+Hours: 37
+Experience: 2
+
+Employee: Employee 20
+ID: BOTH20
+Departments: labor, maternity
+Hours: 37
+Experience: 2
+
+Employee: Employee 21
+ID: BOTH21
+Departments: labor, maternity
+Hours: 37
+Experience: 1
+
+Employee: Employee 22
+ID: BOTH22
+Departments: labor, maternity
+Hours: 37
+Experience: 2
+
+Employee: Employee 23
+ID: BOTH23
+Departments: labor, maternity
+Hours: 37
+Experience: 2
+
+Employee: Employee 24
+ID: BOTH24
+Departments: labor, maternity
+Hours: 37
+Experience: 2
+
+Employee: Employee 25
+ID: BOTH25
+Departments: labor, maternity
+Hours: 37
+Experience: 1
+
+Employee: Employee 26
+ID: BOTH26
+Departments: labor, maternity
+Hours: 37
+Experience: 1
+
+Employee: Employee 27
+ID: BOTH27
+Departments: labor, maternity
+Hours: 37
+Experience: 2
+
+

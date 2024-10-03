@@ -8,9 +8,9 @@ class Shift:
         self.day = day # day of the shift
     
     
-    def calc_hours(start: int, end: int) -> int:
+    def calc_hours(self) -> int:
         "Calculates length of a shift based on start time and end time"
-        if end > start:
-            return end-start
+        if self.end_time > self.start_time:
+            return self.end_time-self.start_time
         else:
-            return 24-start + end
+            return 24-self.start_time + self.end_time

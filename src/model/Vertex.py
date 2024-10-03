@@ -1,11 +1,11 @@
 
 class Vertex:
     # Constructor with optional parameters for all use cases (source/sink, shifts, employees, day/eve/night etc..)
-    def __init__(self, in_going = [], out_going = [], purpose: int = None, 
+    def __init__(self, in_going = None, out_going = None, purpose: int = None, 
                  day: int = None, employee = None, shift = None, time_of_day = None, 
-                 department = None, experience = None):
-        self.in_going = in_going # edges which go into the vertex
-        self.out_going = out_going # edges which go from the vertex
+                 department = None, experience = None, name = None):
+        self.in_going = in_going if in_going is not None else [] # edges which go into the vertex
+        self.out_going = out_going if out_going is not None else []
         self.day = day # used if the vertex portrays a feature on a certain day
         # leading to different ways of handling using switch cases (0-7 for the 8 different nodes)
         self.purpose = purpose # int signifying the function of the node based on which layer in the graph it is in
@@ -14,6 +14,7 @@ class Vertex:
         self.timeOfDay = time_of_day # used if the vertex denotes one of the three periods within a day (day, eve, night)
         self.department = department # used for a vertex denoting department
         self.experience = experience # used for vertices which denote experience level
+        self.name = name # Only used for debugging in order to see which nodes are which
  
     def add_in_going(self, edge):
         self.in_going.append(edge)
@@ -23,4 +24,44 @@ class Vertex:
 
     def __str__(self):
         # can be modified later
-        return f"( {self.purpose} )"
+        if self.purpose == 5:
+            match self.name:
+                case "0_0_0":
+                    return "( day_lab_1 )"
+                case "0_0_1":
+                    return "( day_lab_2 )"
+                case "0_1_0":
+                    return "( day_mat_1 )"
+                case "0_1_1":
+                    return "( day_mat_2 )"
+                case "1_0_0":
+                    return "( eve_lab_1 )"
+                case "1_0_1":
+                    return "( eve_lab_2 )"
+                case "1_1_0":
+                    return "( eve_mat_1 )"
+                case "1_1_1":
+                    return "( eve_mat_2 )"
+                case "2_0_0":
+                    return "( night_lab_1 )"
+                case "2_0_1":
+                    return "( night_lab_2 )"
+                case "2_1_0":
+                    return "( night_mat_1 )"
+                case "2_1_1":
+                    return "( night_mat_2 )"
+        elif self.purpose == 6:
+            match self.name:
+                case "0_0":
+                    return "( lab_day )"
+                case "0_1":
+                    return "( lab_eve )"
+                case "0_2":
+                    return "( lab_night )"
+                case "1_0":
+                    return "( mat_night )"
+                case "1_1":
+                    return "( mat_night )"
+                case "1_2":
+                    return "( mat_night )"
+        return f"( {self.name} )"

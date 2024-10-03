@@ -3,7 +3,7 @@ class Employee:
 
     shifts = None
 
-    def __init__(self, name: str, id: str, departments: list[str], weekly_hrs: int, exp_lvl: int, pref):
+    def __init__(self, name: str, id: str, departments: list[int], weekly_hrs: int, exp_lvl: int, pref = None):
         self.name = name # name of employee
         self.id = id # id/tag to reference them by
         self.departments = departments # list of departments the employee works in
