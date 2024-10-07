@@ -2,7 +2,7 @@
 
 class Shift:
 
-    def __init__(self, start_time: int, end_time: int, day):
+    def __init__(self, start_time: int, end_time: int, day=None):
         self.start_time = start_time # start time of shift
         self.end_time = end_time # end time of shift
         self.day = day # day of the shift

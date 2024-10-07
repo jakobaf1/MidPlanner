@@ -3,7 +3,7 @@ from Employee import Employee
 from Shift import Shift
 from Vertex import Vertex
 from Preference import Preference
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class FlowGraph:
@@ -21,9 +21,7 @@ class FlowGraph:
 def generate_graph(flow_graph, start_date):
 
         # initializes day, day of week and month. Used to relate to calendar
-        day = start_date.day
-        day_of_week = start_date.weekday
-        month = start_date.month
+        date = start_date
 
         shared_nodes = [] # nodes denoting time_of_day/department/exp_lvl
 
@@ -52,10 +50,14 @@ def generate_graph(flow_graph, start_date):
             shared_nodes.append(daily_shared_nodes[:])
         flow_graph.shared_nodes = shared_nodes[:]
 
-        emp_num = 1
         # make employee nodes + edges
         for e in flow_graph.employees:
-            emp_node = Vertex(purpose = 1, employee = e, name= f"E{emp_num}")
+            # reset the date for the employee
+            date = start_date
+            # create a boolean to keep track of which days the employee can work based on preferences
+            last_day_off = True
+            # create the node for the employee
+            emp_node = Vertex(purpose = 1, employee = e, name= e.name)
             add_edge(flow_graph.source, emp_node, 8*e.weekly_hrs)
 
             # for the first day there are no intermediate nodes so they are defined here
@@ -174,9 +176,9 @@ def generate_graph(flow_graph, start_date):
                             for dep in range(len(e.departments)):
                                 add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1+4], 8)
                             add_edge(shift_node, next_intermediate_nodes[2], 4, lower_bound=4, must_take=True)
-
-            emp_num += 1
-
+                
+                print(f"finished for day {date}")
+                date += timedelta(days=1)
 
 
                                 
@@ -227,8 +229,20 @@ def print_graph_bfs(fg):
                 queue.append(new_node)
 
 def print_employees(fg):
+    sum_lab = 0
+    sum_mat = 0
+    sum_both = 0
     for e in fg.source.out_going:
         print(e.to.employee)
+        if e.to.employee.departments == [0]:
+            sum_lab += e.to.employee.weekly_hrs
+        elif e.to.employee.departments == [1]:
+            sum_mat += e.to.employee.weekly_hrs
+        elif e.to.employee.departments == [0,1]:
+            sum_both += e.to.employee.weekly_hrs
+    print(f"sum working in lab: {sum_lab} ")
+    print(f"sum working in mat: {sum_mat} ")
+    print(f"sum working in both: {sum_both} ")
 
 # will be in another place later, but can serve its purpose here for now
 def read_employee_file() -> list[Employee]:
@@ -253,22 +267,78 @@ def read_employee_file() -> list[Employee]:
             hrs = int(lines[i+3][7:])
             exp = int(lines[i+4][12:])
 
-            # For reading preferences
-            # should maybe make a preference object outside the coming loop
-            # and then set the values accordingly based on match cases
-            # for j in range(i+5, len(lines)):
-            #     if 'is_wanted:' in lines[j]:
-            #         if 'yes' in lines[j]:
-            #             pref.wanted = True
-            #         else:
-            #             pref.wanted = False
-            #     if ',' in lines[j]:
-            #       pref_list.append(pref)
-            #       pref = Preference()     
-            # 
+            # For reading preferences 
+            preferences = []
+            j = i+5
+            pref = Preference()
+            if 'Preferences:' not in lines[j]:
+                continue
 
-            emp_list.append(Employee(name=name.strip(), id=id.strip(), departments=dep, weekly_hrs=hrs, exp_lvl=exp)) # add preferences when imlemented
+            while ']' not in lines[j]:
+                if 'is_wanted:' in lines[j]:
+                    if 'yes' in lines[j]:
+                        pref.wanted = True
+                    else:
+                        pref.wanted = False
+                elif 'pref_lvl:' in lines[j]:
+                    pref.pref_lvl = int(lines[j][11])
+                elif 'date:' in lines[j]:
+                    pass
+                    # print(f"for employee {name}")
+                    # print(f"tried to use {int(lines[j][12:14])} as year")
+                    # print(f"tried to use {int(lines[j][9:11])} as month")
+                    # print(f"tried to use {int(lines[j][6:8])} as day")
+                    pref.date = datetime(2000+int(lines[j][12:14]), int(lines[j][9:11]), int(lines[j][6:8]))
+                elif 'day' in lines[j]:
+                    match lines[j][6:].strip().lower():
+                        case 'monday':
+                            pref.day = 0
+                        case 'tuesday':
+                            pref.day = 1
+                        case 'wednesday':
+                            pref.day = 2
+                        case 'thursday':
+                            pref.day = 3
+                        case 'friday':
+                            pref.day = 4
+                        case 'saturday':
+                            pref.day = 5
+                        case 'sunday':
+                            pref.day = 6
+                elif 'shifts:' in lines[j]:
+                    k = 8
+                    start = int(lines[j][k:k+1])
+                    end = int(lines[j][k+3:k+4])
+                    shift = Shift(start, end)
+                    k += 5
+                    # if more shifts are listed
+                    # while lines[j][k] == '.':
+                    #     start = int(lines[j][k+1:k+2])
+                    #     end = int(lines[j][k+4:k+5])
+                    #     Shift(start, end)
+                    #     k += 6
+                    pref.shift = shift
+                elif 'repeat' in lines[j]:
+                    if 'daily' in lines[j][7:]:
+                        pref.repeat = 0
+                    elif 'weekly' in lines[j][7:]:
+                        pref.repeat = 1
+                    elif 'odd' in lines[j][7:]:
+                        pref.repeat = 2
+                    elif 'even' in lines[j][7:]:
+                        pref.repeat = 3
+                    elif 'tri' in lines[j][7:]:
+                        pref.repeat = 4
+                    elif 'monthly' in lines[j][7:]:
+                        pref.repeat = 5
+                elif ',' in lines[j]:
+                  preferences.append(pref)
+                  pref = Preference()
 
+                j += 1
+
+            new_emp = Employee(name=name.strip(), id=id.strip(), departments=dep, weekly_hrs=hrs, exp_lvl=exp, pref= preferences)
+            emp_list.append(new_emp) 
     return emp_list
     
 
@@ -276,9 +346,9 @@ def read_employee_file() -> list[Employee]:
 
 def main():
     start_date = datetime.now()
-    fg = FlowGraph([Shift(7, 15, 0), Shift(15, 23, 0)], read_employee_file())
+    fg = FlowGraph([Shift(7, 15), Shift(7, 19), Shift(15, 23), Shift(19,7), Shift(23, 7)], read_employee_file())
     generate_graph(fg, start_date)
-    print_employees(fg)
+    # print_employees(fg)
 
 if __name__ == "__main__":
         main()

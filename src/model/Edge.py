@@ -21,4 +21,4 @@ class Edge:
         self.flow += flow
 
     def __str__(self):
-        return f"{self.frm} -- {self.flow}/{self.cap_forward} --> {self.to}"
+        return f"{self.frm} -- ({self.flow}/{self.cap_forward}, {self.weight} --> {self.to}"
