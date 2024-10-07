@@ -23,10 +23,12 @@
 # preference level: 2
 # day: Thursday
 # shift: 15-23
-# repeat: yes,
+# repeat: yes
+# ,
 # is_wanted: no
 # preference level: 1
-# date: 12-06-24,
+# date: 12-06-24
+# ,
 #]
 
 # This means that the employee John Doe wants to work thursday nights

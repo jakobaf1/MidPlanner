@@ -226,14 +226,59 @@ def print_graph_bfs(fg):
                 print(node.out_going[i])
                 queue.append(new_node)
 
+def print_employees(fg):
+    for e in fg.source.out_going:
+        print(e.to.employee)
+
+# will be in another place later, but can serve its purpose here for now
+def read_employee_file() -> list[Employee]:
+    in_dir = '../../data/'
+    file_name = 'employees.txt'
+    file = open(in_dir+file_name, 'r')
+    lines = file.readlines()
+    file.close()
+
+    emp_list = []
+
+    for i in range(len(lines)):
+        if '#' in lines[i]: continue
+        if 'Employee:' in lines[i]:
+            name = lines[i][10:]
+            id = lines[i+1][4:]
+            dep = []
+            if 'labor' in lines[i+2]:
+                dep.append(0)
+            if 'maternity' in lines[i+2]:
+                dep.append(1)
+            hrs = int(lines[i+3][7:])
+            exp = int(lines[i+4][12:])
+
+            # For reading preferences
+            # should maybe make a preference object outside the coming loop
+            # and then set the values accordingly based on match cases
+            # for j in range(i+5, len(lines)):
+            #     if 'is_wanted:' in lines[j]:
+            #         if 'yes' in lines[j]:
+            #             pref.wanted = True
+            #         else:
+            #             pref.wanted = False
+            #     if ',' in lines[j]:
+            #       pref_list.append(pref)
+            #       pref = Preference()     
+            # 
+
+            emp_list.append(Employee(name=name.strip(), id=id.strip(), departments=dep, weekly_hrs=hrs, exp_lvl=exp)) # add preferences when imlemented
+
+    return emp_list
+    
+
+
 
 def main():
     start_date = datetime.now()
-    fg = FlowGraph([Shift(7, 15, 0), Shift(15, 23, 0)], [Employee("E1", "111", [0,1], 37, 1)])
+    fg = FlowGraph([Shift(7, 15, 0), Shift(15, 23, 0)], read_employee_file())
     generate_graph(fg, start_date)
-    lab_day = fg.shared_nodes[0][0].out_going[0].to
-    
-    print_graph_bfs(fg)
+    print_employees(fg)
 
 if __name__ == "__main__":
         main()
