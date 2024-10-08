@@ -22,4 +22,7 @@ class Employee:
                 s += "], "
             else:
                 s += ", "
-        return s + f"weekly_hrs: {self.weekly_hrs}, exp_lvl: {self.exp_lvl}" # preferences are TODO
+        s += f"weekly_hrs: {self.weekly_hrs}, exp_lvl: {self.exp_lvl}\n"
+        for p in self.pref:
+            s += f"\t{p}\n"
+        return s

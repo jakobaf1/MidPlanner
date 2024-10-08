@@ -16,7 +16,7 @@
 # pref_lvl: 1/2/3/4/5 (1 is highest prio)
 # date: dd-mm-yy
 # day: 'monday'/'tuesday'/'wednesday'...
-# shifts: 7-15. 15-23. 23-7. 7-19. 19-7 
+# shifts: 07-15. 15-23. 23-07. 07-19. 19-07 
 # repeat: 'odd'/'even'/'alternating'. 'weekly'/'monthly'/... (here alternating will be tri-weekly)
 # repeat_duration: n (integer signifying amount of weeks)
 
@@ -49,11 +49,20 @@ Departments: labor
 Hours: 6
 Experience: 1
 Preferences: [
+is_wanted: no
+preference level: 1
+day: saturday
+repeat: odd
+,
+is_wanted: no
+preference level: 1
+day: sunday
+repeat: odd
+,
 is_wanted: yes
-preference level: 2
-day: Thursday
-shifts: 7-15
-repeat: yes
+preference level: 3
+day: tuesday
+shifts: 07-15
 ,
 ]
 
@@ -125,7 +134,7 @@ day: monday
 is_wanted: no
 preference level: 3
 day: Tuesday
-shifts: 23-7
+shifts: 23-07
 repeat: weekly
 repeat_duration: 5
 ,
@@ -172,8 +181,8 @@ Preferences: [
 is_wanted: no
 preference level: 4
 day: Friday
-shifts: 7-19
-repeat: even. weekly
+shifts: 07-19
+repeat: even
 ,
 ]
 
@@ -186,7 +195,7 @@ Preferences: [
 is_wanted: no
 preference level: 2
 date: 19-06-24
-shifts: 19-7
+shifts: 19-07
 ,
 ]
 
@@ -210,7 +219,7 @@ repeat: no
 is_wanted: no
 preference level: 4
 date: 04-05-24
-shifts: 19-7
+shifts: 19-07
 repeat: daily
 ,
 ]
@@ -223,7 +232,7 @@ Experience: 2
 Preferences: [
 is_wanted: yes
 preference level: 2
-repeat: odd. weekly
+repeat: odd
 ,
 ]
 
@@ -237,7 +246,7 @@ is_wanted: no
 preference level: 4
 day: Monday
 date: 10-02-24
-shifts: 19-7
+shifts: 19-07
 ,
 is_wanted: no
 preference level: 5
@@ -261,7 +270,7 @@ Preferences: [
 is_wanted: no
 preference level: 2
 date: 17-06-24
-shifts: 23-7
+shifts: 23-07
 ,
 ]
 
@@ -292,7 +301,7 @@ date: 13-12-24
 is_wanted: no
 preference level: 3
 day: Sunday
-shifts: 23-7
+shifts: 23-07
 repeat: weekly
 ,
 is_wanted: no
@@ -344,7 +353,7 @@ Preferences: [
 is_wanted: no
 preference level: 2
 date: 13-09-24
-shifts: 7-15
+shifts: 07-15
 ,
 ]
 
@@ -357,13 +366,13 @@ Preferences: [
 is_wanted: no
 preference level: 2
 day: saturday
-repeat: even. weekly
+repeat: even
 repeat_duration: 4
 ,
 is_wanted: no
 preference level: 2
 day: sunday
-repeat: even. weekly
+repeat: even
 ,
 is_wanted: no
 preference level: 2
@@ -402,7 +411,7 @@ Preferences: [
 is_wanted: yes
 preference level: 4
 day: Monday
-repeat: odd. weekly
+repeat: odd
 ,
 ]
 
@@ -415,13 +424,13 @@ Preferences: [
 is_wanted: yes
 preference level: 2
 date: 03-11-24
-shifts: 7-15
+shifts: 07-15
 ,
 is_wanted: yes
 preference level: 4
 day: Wednesday
-shifts: 19-7
-repeat: odd. weekly
+shifts: 19-07
+repeat: odd
 ,
 ]
 
@@ -434,17 +443,17 @@ Preferences: [
 is_wanted: no
 preference level: 2
 day: Saturday
-repeat: odd. weekly
+repeat: odd
 ,
 is_wanted: no
 preference level: 2
 day: Sunday
-repeat: odd. weekly
+repeat: odd
 ,
 is_wanted: no
 preference level: 4
 day: Monday
-shifts: 7-19
+shifts: 07-19
 repeat: weekly
 ,
 ]
@@ -474,7 +483,7 @@ Experience: 2
 Preferences: [
 is_wanted: no
 preference level: 2
-shifts: 7-15
+shifts: 07-15
 repeat: even
 ,
 is_wanted: yes
@@ -492,8 +501,8 @@ Preferences: [
 is_wanted: no
 preference level: 2
 day: Saturday
-shifts: 7-19
-repeat: odd. weekly
+shifts: 07-19
+repeat: odd
 ,
 ]
 
@@ -510,7 +519,7 @@ date: 01-12-24
 is_wanted: no
 preference level: 3
 date: 08-06-24
-shifts: 19-7
+shifts: 19-07
 ,
 ]
 
@@ -523,12 +532,12 @@ Preferences: [
 is_wanted: no
 preference level: 3
 date: 17-12-24
-shifts: 23-7
+shifts: 23-07
 ,
 is_wanted: no
 preference level: 3
 date: 22-10-24
-shifts: 23-7
+shifts: 23-07
 ,
 is_wanted: no
 preference level: 3
@@ -546,7 +555,7 @@ Preferences: [
 is_wanted: no
 preference level: 1
 day: Sunday
-repeat: even. weekly
+repeat: even
 ,
 is_wanted: no
 preference level: 3
@@ -568,7 +577,7 @@ Preferences: [
 is_wanted: no
 preference level: 4
 day: Sunday
-shifts: 19-7
+shifts: 19-07
 repeat: weekly
 ,
 ]
@@ -586,12 +595,12 @@ repeat: even
 ,
 is_wanted: yes
 preference level: 3
-shifts: 19-7
+shifts: 19-07
 ,
 is_wanted: no
 preference level: 1
 date: 18-11-24
-shifts: 23-7
+shifts: 23-07
 ,
 ]
 
@@ -604,7 +613,7 @@ Preferences: [
 is_wanted: no
 preference level: 3
 day: Thursday
-shifts: 23-7
+shifts: 23-07
 repeat: weekly
 ,
 is_wanted: yes
@@ -659,12 +668,12 @@ Preferences: [
 is_wanted: yes
 preference level: 1
 date: 03-10-24
-shifts: 7-15
+shifts: 07-15
 ,
 is_wanted: no
 preference level: 4
 day: Wednesday
-shifts: 7-19
+shifts: 07-19
 repeat: weekly
 ,
 ]
@@ -707,7 +716,7 @@ repeat: weekly
 is_wanted: no
 preference level: 2
 day: sunday
-repeat: odd. weekly
+repeat: odd
 ,
 is_wanted: yes
 preference level: 5
@@ -739,13 +748,13 @@ date: 25-11-24
 ,
 is_wanted: yes
 preference level: 4
-shifts: 7-19
+shifts: 07-19
 repeat: daily
 ,
 is_wanted: yes
 preference level: 1
 day: Sunday
-shifts: 7-19
+shifts: 07-19
 repeat: weekly
 ,
 ]
@@ -759,13 +768,13 @@ Preferences: [
 is_wanted: yes
 preference level: 2
 day: Monday
-shifts: 7-19
-repeat: odd. weekly
+shifts: 07-19
+repeat: odd
 ,
 is_wanted: yes
 preference level: 3
 day: Saturday
-repeat: even. weekly
+repeat: even
 ,
 ]
 
@@ -796,18 +805,18 @@ Preferences: [
 is_wanted: yes
 preference level: 3
 day: Wednesday
-repeat: odd. weekly
+repeat: odd
 ,
 is_wanted: no
 preference level: 4
 day: Friday
-shifts: 7-19
+shifts: 07-19
 repeat: odd
 ,
 is_wanted: no
 preference level: 5
 day: Wednesday
-shifts: 7-15
+shifts: 07-15
 repeat: weekly
 ,
 ]
@@ -821,7 +830,7 @@ Preferences: [
 is_wanted: no
 preference level: 1
 day: Sunday
-repeat: odd. weekly
+repeat: odd
 ,
 ]
 
@@ -838,7 +847,7 @@ repeat: weekly
 ,
 is_wanted: no
 preference level: 1
-shifts: 23-7
+shifts: 23-07
 repeat: daily
 ,
 is_wanted: yes
@@ -873,11 +882,11 @@ Preferences: [
 is_wanted: no
 preference level: 3
 day: Sunday
-repeat: odd. weekly
+repeat: odd
 ,
 is_wanted: yes
 preference level: 1
-shifts: 23-7
+shifts: 23-07
 repeat: daily
 ,
 is_wanted: no
