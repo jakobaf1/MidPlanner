@@ -6,6 +6,7 @@ from Shift import Shift
 from Vertex import Vertex
 from Preference import Preference
 from datetime import datetime, timedelta
+from Ford_Fulkerson import Ford_Fulkerson
 
 
 class FlowGraph:
@@ -70,7 +71,7 @@ def generate_graph(flow_graph, start_date):
             next_intermediate_nodes = [Vertex(purpose=3, name="day_1_1"), Vertex(purpose=3, name="day_1_2"), Vertex(purpose=3, name="day_1_3")]
 
             # make the graph for each day for the employee "e"
-            for day in range(15): # TODO temporarily set to x days for printing purposes
+            for day in range(56):
                 # Weekday lets the program know what day it is
                 weekday = date.weekday()
                 # checking whether they should be off on this day
@@ -165,15 +166,19 @@ def generate_graph(flow_graph, start_date):
                 date += timedelta(days=1)
                 last_day_off = False
 
-            break
 
 
 ### Helper functions below here ###
                                 
-def add_edge(frm, to, cap, back=0, w=0, lower_bound=0, must_take=False):
-    new_edge = Edge(frm, to, cap, back, w, lower_bound, must_take)
+def add_edge(frm, to, cap, w=0, lower_bound=0, must_take=False):
+    new_edge = Edge(0, frm, to, cap, None, w, lower_bound, must_take)
     frm.add_out_going(new_edge)
     to.add_in_going(new_edge)
+    # if frm.purpose != 0 and to.purpose != 7:
+    counter_edge = Edge(1, to, frm, 0, new_edge, -w, lower_bound, must_take)
+    to.add_out_going(counter_edge)
+    frm.add_in_going(counter_edge)
+    new_edge.counterpart = counter_edge
 
 def pref_days(e, date):
     # make a list for each day in the period
@@ -350,20 +355,29 @@ def set_shift_weight(daily_pref, s):
 ### PRINT STATEMENTS ###
 
 def print_graph_part(fg):
-    s = ""
+    s = "\t"
     start_node = fg.source
     # src to emp1
-    for i in range(6):
-        s += str(start_node.out_going[0])
-        s += ", "
-        start_node = start_node.out_going[0].to
-
+    for i in range(7):
+        for e in start_node.out_going:
+            if e.type == 0 and e.flow != 0:
+                s += str(e)
+                s += "\n\t "
+                start_node = e.to
+                break
     # emp1 to day_x
     # x = 0
     # s += str(start_node.out_going[x])
     # s += ", "
     # start_node = start_node.out_going[x].to
     
+    print(s)
+
+def print_graph_sink(fg):
+    s = "\t"
+    for e in fg.sink.in_going:
+        s += str(e)
+        s += "\n\t "
     print(s)
 
 def print_graph_days(fg):
@@ -444,8 +458,12 @@ def print_graph_bfs(fg):
         for i in range(len(node.out_going)):
             new_node = node.out_going[i].to
             if visited.count(new_node) <= 0:
-                print(node.out_going[i])
+                # print(node.out_going[i])
                 queue.append(new_node)
+                visited.append(new_node)
+    
+    print(f"Amount of nodes in graph: {len(visited)}")
+    
 
 def print_employees(fg):
     sum_lab = 0
@@ -558,13 +576,20 @@ def read_employee_file() -> list[Employee]:
 
 
 def main():
-    start_time = time.time()
     start_date = datetime.now()
     fg = FlowGraph([Shift(7, 15), Shift(7, 19), Shift(15, 23), Shift(19,7), Shift(23, 7)], read_employee_file())
     generate_graph(fg, start_date)
+    start_time = time.time()
+    algo = Ford_Fulkerson(fg)
+    flow, cost, n_each_weight = algo.ford_fulkerson(fg.source, fg.sink)
+    print(f"max flow in graph: {flow}\nTotal cost: {cost}\namount of each weight [1000, 250, 50, 5, -1000, -250, -50, -5]: {n_each_weight}")
+    # path = algo.dfs(fg.source, fg.sink)
+    # for i in range(len(path)):
+    #     print(f"{path[i]}\n")
     end_time = time.time()
-    print(f"Runtime: {(end_time - start_time)*1000} ms")
-    print_graph_part(fg)
+    print(f"Runtime: {(end_time - start_time)} s")
+    # print_graph_part(fg)
+
 
 if __name__ == "__main__":
         main()
