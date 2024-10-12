@@ -6,11 +6,13 @@ from Shift import Shift
 from Vertex import Vertex
 from Preference import Preference
 from datetime import datetime, timedelta
-from Ford_Fulkerson import Ford_Fulkerson
+from Algorithms import Algorithms
 
 
 class FlowGraph:
-    
+
+    period_in_weeks = 8
+    days_in_period = period_in_weeks*7
     source = Vertex(purpose = 0, name = "s")
     sink = Vertex(purpose = 7, name = "t")
     shared_nodes = [] # remove as field eventually, just for debugging now
@@ -29,7 +31,7 @@ def generate_graph(flow_graph, start_date):
         shared_nodes = [] # nodes denoting time_of_day/department/exp_lvl
 
         # I make the final columns of the graph for each day
-        for day in range(56):
+        for day in range(flow_graph.days_in_period):
             daily_shared_nodes = []
 
             # I encode the departments as 0: labor, 1: maternity
@@ -39,14 +41,16 @@ def generate_graph(flow_graph, start_date):
                     # this node signifies the 2nd last layer: dep_time
                     layer_6_node = Vertex(department=1, time_of_day=0, purpose= 6, name= f"{dep}_{time}")
                     # link it to the sink
-                    add_edge(layer_6_node, flow_graph.sink, 6*8)
+                    if time == 0:
+                        add_edge(layer_6_node, flow_graph.sink, 6*8) #day needs 6 workers
+                    else:
+                        add_edge(layer_6_node, flow_graph.sink, 4*8) # eve/night needs 4 workers
 
                     for exp in range(2): # experience level loop
                         layer_5_node = Vertex(department=dep, time_of_day=time, experience=exp+1, purpose= 5, name= f"{time}_{dep}_{exp}") 
                         add_edge(layer_5_node, layer_6_node, (6-exp)*8)
 
                         # add to the array for the day after all the links between the final part of the graph are connected
-                        # TODO Concern: don't think the edge made in exp=2 is visible, from the perspective of the edge where exp=1, in the final graph 
                         daily_shared_nodes.append(layer_5_node)
 
             # after making the array containing combinations i link it to the overall array
@@ -61,17 +65,17 @@ def generate_graph(flow_graph, start_date):
             last_day_off = True
             # create the node for the employee
             emp_node = Vertex(purpose = 1, employee = e, name= e.name)
-            add_edge(flow_graph.source, emp_node, 8*e.weekly_hrs)
+            add_edge(flow_graph.source, emp_node, flow_graph.period_in_weeks*e.weekly_hrs)
 
             # I define lists of preferences based on the day and shift
-            day_preferences = pref_days(e, date)
-            shift_preferences  = pref_shifts(e,date)
+            day_preferences = pref_days(e, date, flow_graph.days_in_period)
+            shift_preferences  = pref_shifts(e,date, flow_graph.days_in_period)
 
             # define the list for intermediate nodes which the shifts are to be linked
             next_intermediate_nodes = [Vertex(purpose=3, name="day_1_1"), Vertex(purpose=3, name="day_1_2"), Vertex(purpose=3, name="day_1_3")]
 
             # make the graph for each day for the employee "e"
-            for day in range(56):
+            for day in range(flow_graph.days_in_period):
                 # Weekday lets the program know what day it is
                 weekday = date.weekday()
                 # checking whether they should be off on this day
@@ -82,7 +86,7 @@ def generate_graph(flow_graph, start_date):
 
                 w = set_day_weight(day_preferences[day])
                 # if the employee is required not to work this day, day is skipped
-                if w == inf:
+                if w == float("Inf"):
                     last_day_off = True
                     wd = weekday_to_str(weekday+1)
                     next_intermediate_nodes =  [Vertex(purpose=3, name=f"day_{wd}_1"), Vertex(purpose=3, name=f"day_{wd}_2"), Vertex(purpose=3, name=f"day_{weekday_to_str(wd)}_3")]
@@ -94,7 +98,7 @@ def generate_graph(flow_graph, start_date):
                 if not(shift_pref):
                     add_edge(emp_node, day_node, 12, w=w)
                 else:
-                    add_edge(emp_node, day_node, 12)
+                    add_edge(emp_node, day_node, 12) # TODO have to make sure this is only 8 if the next day is a day off
                 # have to define the intermediate nodes here, as they are to be used in current day and next day
                 prev_intermediate_nodes = next_intermediate_nodes[:]
                 next_intermediate_nodes =  [Vertex(purpose=3, name=f"day_{weekday_to_str(weekday+1)}_1"), Vertex(purpose=3, name=f"day_{weekday_to_str(weekday+1)}_2"), Vertex(purpose=3, name=f"day_{weekday_to_str(weekday+1)}_3")]
@@ -113,54 +117,63 @@ def generate_graph(flow_graph, start_date):
                         w_s = set_shift_weight(shift_preferences[day], s)
                         # print(f"just set weight to: {w_s}")
                     if last_day_off:
-                        add_edge(day_node, shift_node, s.calc_hours()+4, w=w_s)
+                        add_edge(day_node, shift_node, s.calc_hours()+4, w=w_s, lower_bound=s.calc_hours())
                         # print(f"1: just set edge with weight: {w_s} on day: {date.weekday()}")
                     
                     exp_lvl = e.exp_lvl
                     # link to the correct node(s)
                     match s.start_time:
+                        case 0:
+                            # need to implement that 14 hours go from source, and somehow 24 end up at the sink :)
+                            if not(last_day_off):
+                                add_edge(prev_intermediate_nodes[0], shift_node, s.calc_hours(), w=w_s, lower_bound=s.calc_hours()) # TODO this need to be 16 on the first day after a day off
+                            for dep in range(len(e.departments)): # for loop in case employee is in multiple departments
+                                add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1], 8, lower_bound=8) # TODO this needs to be 12 on first day after a day off
+                                add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1+2], 8, lower_bound=8) # TODO this needs to be 12 on first day after a day off
+                                add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1+4], 8, lower_bound=8) # TODO this needs to be 12 on first day after a day off
+                            add_edge(shift_node, next_intermediate_nodes[2], 4, lower_bound=4)
                         case 7:
                             if not(last_day_off):
-                                add_edge(prev_intermediate_nodes[0], shift_node, 12, w=w_s)
+                                add_edge(prev_intermediate_nodes[0], shift_node, s.calc_hours(), w=w_s, lower_bound=s.calc_hours()) # TODO this need to be 16 on the first day after a day off
                             for dep in range(len(e.departments)): # for loop in case employee is in multiple departments
-                                add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1], 8)
+                                add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1], 8, lower_bound=8) # TODO this needs to be 12 on first day after a day off
                                 
                                 # adds the 4 hours extra from a 12 hour shift to the evening
                                 if s.calc_hours == 12:
                                     # have to figure out how I will handle the splits from 12 hours. maybe add a minimum and maximum amount one can send through
                                     # if I add a min and max of 4 hours, then there can only be sent 4 hours through here (which is what's supposed to happen)
                                     add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1+2], 4, lower_bound=4)
-                            add_edge(shift_node, next_intermediate_nodes[0], 4, lower_bound=4, must_take=True)
+                            add_edge(shift_node, next_intermediate_nodes[0], 4, lower_bound=4)
 
                         case 15:
                             if not(last_day_off):
                                 for i in range(2):
-                                    add_edge(prev_intermediate_nodes[i], shift_node, 12, w=w_s)
+                                    add_edge(prev_intermediate_nodes[i], shift_node, s.calc_hours(), w=w_s, lower_bound=s.calc_hours())
                             for dep in range(len(e.departments)):
-                                add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1+2], 8)
-                            add_edge(shift_node, next_intermediate_nodes[1], 4, lower_bound=4, must_take=True)
+                                add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1+2], 8, lower_bound=8)
+                            add_edge(shift_node, next_intermediate_nodes[1], 4, lower_bound=4)
 
                         case 19:
                             if not(last_day_off):
                                 for i in range(3):
-                                    add_edge(prev_intermediate_nodes[i], shift_node, 12, w=w_s)
+                                    add_edge(prev_intermediate_nodes[i], shift_node, s.calc_hours(), w=w_s, lower_bound=s.calc_hours())
                             for dep in range(len(e.departments)):
-                                add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1+4], 8)
+                                add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1+4], 8, lower_bound=8)
                                 
                                 # adds the 4 hours extra from a 12 hour shift to the evening
                                 if s.calc_hours == 12:
                                     # have to figure out how I will handle the splits from 12 hours. maybe add a minimum and maximum amount one can send through
                                     # if I add a min and max of 4 hours, then there can only be sent 4 hours through here (which is what's supposed to happen)
                                     add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1+2], 4, lower_bound=4)
-                            add_edge(shift_node, next_intermediate_nodes[2], 4, lower_bound=4, must_take=True)
+                            add_edge(shift_node, next_intermediate_nodes[2], 4, lower_bound=4)
 
                         case 23:
                             if not(last_day_off):
                                 for i in range(3):
-                                    add_edge(prev_intermediate_nodes[i], shift_node, 12, w=w_s)
+                                    add_edge(prev_intermediate_nodes[i], shift_node, s.calc_hours(), w=w_s, lower_bound=s.calc_hours())
                             for dep in range(len(e.departments)):
-                                add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1+4], 8)
-                            add_edge(shift_node, next_intermediate_nodes[2], 4, lower_bound=4, must_take=True)
+                                add_edge(shift_node, shared_nodes[day][6*dep+exp_lvl-1+4], 8, lower_bound=8)
+                            add_edge(shift_node, next_intermediate_nodes[2], 4, lower_bound=4)
                 
                 # print(f"finished for day {date}")
                 date += timedelta(days=1)
@@ -175,15 +188,15 @@ def add_edge(frm, to, cap, w=0, lower_bound=0, must_take=False):
     frm.add_out_going(new_edge)
     to.add_in_going(new_edge)
     # if frm.purpose != 0 and to.purpose != 7:
-    counter_edge = Edge(1, to, frm, 0, new_edge, -w, lower_bound, must_take)
+    counter_edge = Edge(1, to, frm, 0, new_edge, -w, 0, must_take)
     to.add_out_going(counter_edge)
     frm.add_in_going(counter_edge)
     new_edge.counterpart = counter_edge
 
-def pref_days(e, date):
+def pref_days(e, date, days):
     # make a list for each day in the period
     day_preferences = []
-    for i in range(56):
+    for i in range(days):
         day_preferences.append([])
 
     # go through every preference for the employee
@@ -205,26 +218,26 @@ def pref_days(e, date):
             if p.repeat is not None:
                 match p.repeat:
                     case 1: # weekly
-                        for j in range(first_day, 56, 7):
+                        for j in range(first_day, days, 7):
                             day_indices.append(j)
                     case 2: # odd weeks
                         date += timedelta(days=first_day)
                         starting_week = 0 if week % 2 == 1 else 1
-                        for j in range(first_day+7*starting_week, 56, 14):
+                        for j in range(first_day+7*starting_week, days, 14):
                             day_indices.append(j)
 
                         date -= timedelta(days=first_day)
                     case 3: # even weeks
                         date += timedelta(days=first_day)
                         starting_week = 0 if week % 2 == 0 else 1
-                        for j in range(first_day+7*starting_week, 56, 14):
+                        for j in range(first_day+7*starting_week, days, 14):
                             day_indices.append(j)
 
                         date -= timedelta(days=first_day)
                     case 4: # tri-weekly
                         pass # TODO
                     case 5: # monthly
-                        for j in range(first_day, 56, 28):
+                        for j in range(first_day, days, 28):
                             day_indices.append(j)
 
             # append the preference on each relevant day
@@ -233,7 +246,7 @@ def pref_days(e, date):
 
         if p.date is not None:
             day_index = 0
-            for j in range(56):
+            for j in range(days):
                 if p.date == date:
                     day_preferences[day_index].append(p)
                     date -= timedelta(days=day_index)
@@ -243,9 +256,9 @@ def pref_days(e, date):
 
     return day_preferences[:]
 
-def pref_shifts(e, date):
+def pref_shifts(e, date, days):
     shift_preferences = []
-    for i in range(56):
+    for i in range(days):
         shift_preferences.append([])
 
     for p in e.pref:
@@ -272,26 +285,26 @@ def pref_shifts(e, date):
                 #             for j in range(first_day, len(shift_preferences)):
                 #                 day_indices.append(j)
                 #         case 1: # weekly
-                for j in range(first_day, 56, 7):
+                for j in range(first_day, days, 7):
                     day_indices.append(j)
                         # case 2: # odd weeks
                         #     date += timedelta(days=first_day)
                         #     starting_week = 0 if week % 2 == 1 else 1
-                        #     for j in range(first_day+7*starting_week, 56, 14):
+                        #     for j in range(first_day+7*starting_week, days, 14):
                         #         day_indices.append(j)
 
                         #     date -= timedelta(days=first_day)
                         # case 3: # even weeks
                         #     date += timedelta(days=first_day)
                         #     starting_week = 0 if week % 2 == 0 else 1
-                        #     for j in range(first_day+7*starting_week, 56, 14):
+                        #     for j in range(first_day+7*starting_week, days, 14):
                         #         day_indices.append(j)
 
                         #     date -= timedelta(days=first_day)
                         # case 4: # tri-weekly
                         #     pass # TODO
                         # case 5: # monthly
-                        #     for j in range(first_day, 56, 28):
+                        #     for j in range(first_day, days, 28):
                         #         day_indices.append(j)
 
                 # append the preference on each relevant day
@@ -304,7 +317,7 @@ def pref_shifts(e, date):
             
             if p.date is not None:
                 day_index = 0
-                for j in range(56):
+                for j in range(days):
                     if p.date == date:
                         shift_preferences[day_index].append(p)
                         date -= timedelta(days=day_index)
@@ -340,7 +353,7 @@ def set_shift_weight(daily_pref, s):
             match p.pref_lvl:
                 case 1: 
                     if not(p.wanted):
-                        return inf
+                        return float("Inf")
                 case 2:
                     return -1000 if p.wanted else 1000
                 case 3:
@@ -353,6 +366,15 @@ def set_shift_weight(daily_pref, s):
     return 0
 
 ### PRINT STATEMENTS ###
+
+def print_edges_with_flow(fg):
+    node = fg.source
+    # while node != fg.sink:
+    for e in node.out_going:
+        for edge in e.to.out_going:
+            if edge.flow > 0:
+                print(f"{edge}\n")
+
 
 def print_graph_part(fg):
     s = "\t"
@@ -400,22 +422,29 @@ def print_graph_shifts(fg):
     s = ""
     start_node = fg.source
     # src to emp1
-    s += str(start_node.out_going[0])
-    s += "\n\t"
-    start_node = start_node.out_going[0].to
+    # s += str(start_node.out_going[0])
+    # s += "\n\t"
+    # start_node = start_node.out_going[0].to
     # for loops to loop through each day and shift
-    for i in range(len(start_node.out_going)):
-        day_node = start_node.out_going[i].to # this is gonna give intermediate nodes for most
-        if day_node.out_going[0].to.purpose == 3:
-            for e in day_node.out_going[0].to.out_going:
-                s += str(e)
-                s += "\n\t"
-        else:
-            for e in day_node.out_going:
-                s += str(e)
-                s += "\n\t"
+    for e in start_node.out_going:
+        if e.flow == 0: continue
+        print(f"{e.to}\n\t")
+
+
+
+
+    # for i in range(len(start_node.out_going)):
+    #     day_node = start_node.out_going[i].to # this is gonna give intermediate nodes for most
+    #     if day_node.out_going[0].to.purpose == 3:
+    #         for e in day_node.out_going[0].to.out_going:
+    #             s += str(e)
+    #             s += "\n\t"
+    #     else:
+    #         for e in day_node.out_going:
+    #             s += str(e)
+    #             s += "\n\t"
     
-    print(s)
+    # print(s)
 
 def weekday_to_str(day) -> str:
     match day:
@@ -574,21 +603,83 @@ def read_employee_file() -> list[Employee]:
             emp_list.append(new_emp) 
     return emp_list
 
+def print_full_schedule(fg):
+    s = ""
+    for e in fg.source.out_going:
+        if e.flow > 0:
+            s += f"{e.to.name}\n\t"
+            for edge in e.to.out_going:
+                s += f"{e.to.name}\n\t"
+                if edge.flow > 0:
+                    s += f"{edge}\n\t"
+                for n in edge.to.out_going:
+                    if n.to.purpose == 3:
+                        if n.flow > 0:
+                            for n2 in n.to.out_going:
+                                if n2.flow > 0:
+                                    s += f"{n2}\n\t"
+                    else:
+                        if n.flow > 0:
+                            for n2 in n.to.out_going:
+                                if n2.flow > 0:
+                                    s += f"{n2}\n\t"
+                                
+
+    print(s)
+
+def find_paths_with_flow(vertex, sink, visited, path, flows, flow):
+    visited[vertex.index] = True
+    path.append(vertex)
+    if flow != 0:
+        flows.append(flow)
+
+    # If we reach the sink, print the path
+    if vertex.purpose == 6:
+        s = ""
+        for i, node in enumerate(path):
+            if i == len(path)-1:
+                s += f"{node}\n"
+            else:
+                s += f"{node} - {flows[i]} -> "
+        print(s)
+    else:
+        # Traverse all out-going edges from this vertex
+        for edge in vertex.out_going:
+            # Check if there is positive flow on the edge and if the destination has not been visited
+            if edge.flow > 0 and not(visited[edge.to.index]):
+                find_paths_with_flow(edge.to, sink, visited, path, flows, edge.flow)
+
+    # Backtrack
+    path.pop()
+    if len(flows) > 0:
+        flows.pop()
+    visited[vertex.index] = False
+
+def print_flow_paths(source, sink):
+    visited = [False]*source.total_vertices  # To keep track of visited vertices
+    path = []        # To store the current path
+    flows = []
+    find_paths_with_flow(source, sink, visited, path, flows, 0)
+
+
 
 def main():
     start_date = datetime.now()
-    fg = FlowGraph([Shift(7, 15), Shift(7, 19), Shift(15, 23), Shift(19,7), Shift(23, 7)], read_employee_file())
+    fg = FlowGraph([Shift(7, 15), Shift(7, 19), Shift(15, 23), Shift(19,7), Shift(23, 7), Shift(0, 24)], read_employee_file())
     generate_graph(fg, start_date)
     start_time = time.time()
-    algo = Ford_Fulkerson(fg)
+    algo = Algorithms(fg)
     flow, cost, n_each_weight = algo.ford_fulkerson(fg.source, fg.sink)
-    print(f"max flow in graph: {flow}\nTotal cost: {cost}\namount of each weight [1000, 250, 50, 5, -1000, -250, -50, -5]: {n_each_weight}")
-    # path = algo.dfs(fg.source, fg.sink)
+    # flow, cost = algo.edmond_karp(fg.source, fg.sink)
+    print(f"max flow in graph: {flow}\nTotal cost: {cost}")
+    print(f"amount of each weight [1000, 250, 50, 5, -1000, -250, -50, -5]: {n_each_weight}\nThere are {Edge.total_edges} edges")
+    # flow = algo.ford_fulkerson(fg.source, fg.sink)
+    # print(f"max flow: {flow}")
     # for i in range(len(path)):
     #     print(f"{path[i]}\n")
     end_time = time.time()
     print(f"Runtime: {(end_time - start_time)} s")
-    # print_graph_part(fg)
+    # print_flow_paths(fg.source, fg.sink)
 
 
 if __name__ == "__main__":

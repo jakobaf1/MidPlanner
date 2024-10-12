@@ -1,5 +1,7 @@
 
 class Vertex:
+    total_vertices = 0
+    index = -1
     # Constructor with optional parameters for all use cases (source/sink, shifts, employees, day/eve/night etc..)
     def __init__(self, in_going = None, out_going = None, purpose: int = None, 
                  day: int = None, employee = None, shift = None, time_of_day = None, 
@@ -15,6 +17,8 @@ class Vertex:
         self.department = department # used for a vertex denoting department
         self.experience = experience # used for vertices which denote experience level
         self.name = name # Only used for debugging in order to see which nodes are which
+        Vertex.total_vertices += 1
+        self.index = Vertex.total_vertices-1
  
     def add_in_going(self, edge):
         self.in_going.append(edge)
