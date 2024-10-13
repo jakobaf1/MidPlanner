@@ -1,6 +1,8 @@
 
 class Edge:
     total_edges = 0
+    edge_index = -1
+    # edges = []
     def __init__(self, type, frm, to, cap_forward: int, counterpart = None, weight: int = 0, lower_bound: int = 0, must_take: bool = False, flow: int = 0):
         self.type = type # forward: 0, backward: 1
         self.frm = frm # the "from" vertex
@@ -12,6 +14,8 @@ class Edge:
         self.must_take = must_take # bollean which states whether an edge is required to be taken
         self.flow = flow
         Edge.total_edges += 1
+        self.edge_index = Edge.total_edges-1
+        # Edge.edges.append(self)
 
     def connect_to_vertex(self, vertex):
         self.to = vertex

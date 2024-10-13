@@ -1,7 +1,7 @@
 
 class Vertex:
     total_vertices = 0
-    index = -1
+    vertex_index = -1
     # Constructor with optional parameters for all use cases (source/sink, shifts, employees, day/eve/night etc..)
     def __init__(self, in_going = None, out_going = None, purpose: int = None, 
                  day: int = None, employee = None, shift = None, time_of_day = None, 
@@ -18,7 +18,7 @@ class Vertex:
         self.experience = experience # used for vertices which denote experience level
         self.name = name # Only used for debugging in order to see which nodes are which
         Vertex.total_vertices += 1
-        self.index = Vertex.total_vertices-1
+        self.vertex_index = Vertex.total_vertices-1
  
     def add_in_going(self, edge):
         self.in_going.append(edge)
@@ -55,17 +55,16 @@ class Vertex:
                 case "2_1_1":
                     return "( night_mat_2 )"
         elif self.purpose == 6:
-            match self.name:
-                case "0_0":
-                    return "( lab_day )"
-                case "0_1":
-                    return "( lab_eve )"
-                case "0_2":
-                    return "( lab_night )"
-                case "1_0":
-                    return "( mat_night )"
-                case "1_1":
-                    return "( mat_night )"
-                case "1_2":
-                    return "( mat_night )"
+                if "0_0" in self.name:
+                    return f"( lab_day{self.name[3:]} )"
+                if "0_1" in self.name:
+                    return f"( lab_eve{self.name[3:]} )"
+                if "0_2" in self.name:
+                    return f"( lab_night{self.name[3:]} )"
+                if "1_0" in self.name:
+                    return f"( mat_night{self.name[3:]} )"
+                if "1_1" in self.name:
+                    return f"( mat_night{self.name[3:]} )"
+                if "1_2" in self.name:
+                    return f"( mat_night{self.name[3:]} )"
         return f"( {self.name} )"
