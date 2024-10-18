@@ -33,4 +33,6 @@ class Edge:
             self.counterpart.flow -= flow
 
     def __str__(self):
-        return f"{self.frm} -- ({self.flow}/{self.cap_forward}, {self.weight}) --> {self.to}"
+        if self.type == 0:
+            return f"{self.frm} -- ({self.flow}/{self.cap_forward}, w={self.weight}, lw_b = {self.lower_bound} --> {self.to}"
+        return f"{self.frm} -- ({self.cap_forward}) --> {self.to}"

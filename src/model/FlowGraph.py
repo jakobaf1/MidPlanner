@@ -99,9 +99,9 @@ def generate_graph(flow_graph, start_date):
 
                 day_node = Vertex(day = day, purpose= 2, name=f"{weekday_to_str(weekday)}_day_{day}")
                 if not(shift_pref):
-                    add_edge(emp_node, day_node, 12, w=w)
+                    add_edge(emp_node, day_node, 12, w=w, lower_bound=8)
                 else:
-                    add_edge(emp_node, day_node, 12) # TODO have to make sure this is only 8 if the next day is a day off
+                    add_edge(emp_node, day_node, 12, lower_bound=8) # TODO have to make sure this is only 8 if the next day is a day off
                 # have to define the intermediate nodes here, as they are to be used in current day and next day
                 # prev_intermediate_nodes = next_intermediate_nodes[:]
                 # next_intermediate_nodes =  [Vertex(purpose=3, name=f"{weekday_to_str(weekday+1)}_day_{day+1}_1"), Vertex(purpose=3, name=f"{weekday_to_str(weekday+1)}_day_{day+1}_2"), Vertex(purpose=3, name=f"{weekday_to_str(weekday+1)}_day_{day+1}_3")]
@@ -123,7 +123,7 @@ def generate_graph(flow_graph, start_date):
                         # print(f"just set weight to: {w_s}")
                     # if last_day_off:
                         # add_edge(day_node, shift_node, s.calc_hours()+4, w=w_s, lower_bound=s.calc_hours())
-                    add_edge(day_node, shift_node, s.calc_hours(), w=w_s, lower_bound=s.calc_hours())
+                    add_edge(day_node, shift_node, s.calc_hours(), w=w_s, lower_bound=8)
                     # print(f"1: just set edge with weight: {w_s} on day: {date.weekday()}")
                     
                     exp_lvl = e.exp_lvl
@@ -180,7 +180,7 @@ def generate_graph(flow_graph, start_date):
                 
                 # print(f"finished for day {date}")
                 date += timedelta(days=1)
-                last_day_off = False
+                # last_day_off = False
 
 
 
@@ -191,7 +191,7 @@ def add_edge(frm, to, cap, w=0, lower_bound=0, must_take=False):
     frm.add_out_going(new_edge)
     to.add_in_going(new_edge)
     # if frm.purpose != 0 and to.purpose != 7:
-    counter_edge = Edge(1, to, frm, 0, new_edge, -w, 0, must_take)
+    counter_edge = Edge(1, to, frm, 0, new_edge, -w, lower_bound, must_take)
     to.add_out_going(counter_edge)
     frm.add_in_going(counter_edge)
     new_edge.counterpart = counter_edge
@@ -682,14 +682,19 @@ def print_shift_assignments(fg, shift_assignments):
 
 def main():
     start_date = datetime.now()
-    fg = FlowGraph([Shift(7, 19), Shift(19,7), Shift(7, 15), Shift(15, 23), Shift(23, 7), Shift(0, 24)], read_employee_file())
+    fg = FlowGraph([Shift(7, 15), Shift(15, 23), Shift(23, 7), Shift(7, 19), Shift(19,7)], read_employee_file())#, Shift(0, 24) can add 24-hr shifts when they can be handled
     generate_graph(fg, start_date)
+    
+    cap_sum = 0
+    for e in fg.source.out_going:
+        cap_sum += e.cap_forward
+    print(f"Employee hours add up to a total of: {cap_sum}")
     start_time = time.time()
     algo = Algorithms(fg)
 
     # flow, cost, n_each_weight, shift_assignments = algo.ford_fulkerson(fg.source, fg.sink)
     # flow, cost, shift_assignments = algo.edmond_karp(fg.source, fg.sink)
-    flow, cost = algo.min_cost_flow(fg.source.total_vertices, 9224, fg.source, fg.sink)
+    flow, cost = algo.min_cost_flow(fg.source.total_vertices, cap_sum, fg.source, fg.sink)
     print(f"max flow in graph: {flow}\nTotal cost: {cost}")
     # print(f"amount of each weight [1000, 250, 50, 5, -1000, -250, -50, -5]: {n_each_weight}\nThere are {Edge.total_edges} edges")
     # flow = algo.ford_fulkerson(fg.source, fg.sink)
@@ -699,13 +704,44 @@ def main():
     end_time = time.time()
     print(f"Runtime: {(end_time - start_time)} s")
     print_flow_paths(fg.source, fg.sink)
+
+    # algo.print_flow_paths(fg.source, fg.sink)
+    # shift_assignments = algo.employee_shifts
     # print_shift_assignments(fg, shift_assignments)
+
     # print_graph_sink(fg)
 
+    # parent = [-1]*fg.source.total_vertices
+    # nodes_visited = [False] * fg.source.total_vertices
+    # aug_path = algo.bfs(fg.source, fg.sink, parent, nodes_visited)
+    # if not aug_path:
+    #     print("No augmenting path was found")
+    # node = fg.sink
+    # while node != fg.source:
+    #     for e in node.in_going:
+    #         if e.frm == parent[node.vertex_index]:
+    #             print(e)
+    #     node = parent[node.vertex_index]
+    #     if node.purpose == 2:
+    #         day_25_node = node
+    # print("For the day node:")
+    # for e in day_25_node.out_going:
+    #     if e.type == 0:
+    #         if e.cap_forward == 12:
+    #             new_path = e.to
+    #         print(e)
+
+    # print("for the new path:")
+    # for e in new_path.out_going:
+    #     if e.type == 0:
+    #         print(e)
+    # path = algo.dfs(fg.source, fg.sink)
+    # for e in path:
+    #     print(e)
 
     # flow_sum = 0
     # for e in fg.sink.in_going:
-    #     flow_sum += e.flow
+    #     flow_sum += e.cap_forward
     # print(f"sum of flows going into sink: {flow_sum}")
 
 
